@@ -56,6 +56,8 @@ int main(){
 }
 ```
 
+ - These same snippets can be found at **src/client.cpp** and **src/server.cpp**
+
 # Why I made this
 I always had trouble working with sockets as a beginner, and even after learning how, it still bothers me how I have to do it manually, so i decided to make NovusNet.
 NN is a tool that sets it all up for you in 5 lines of code, simplicity meets efficiency. It manages the initial connection, and the later communication between the server and client.

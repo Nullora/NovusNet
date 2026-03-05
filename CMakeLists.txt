@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(ls
-    src/main.cpp
+    src/server.cpp
     src/nn.cpp
 )
 add_executable(cl
