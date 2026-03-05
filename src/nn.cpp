@@ -36,7 +36,7 @@ void runServer(int port) {
             sockaddr_in client_addr{};
             socklen_t len = sizeof(client_addr);
 
-            // Block until a new client connects
+            // block until a new client connects
             client_fd = accept(server_fd, (sockaddr*)&client_addr, &len);
             if (client_fd < 0) continue;
 
@@ -52,7 +52,7 @@ void runServer(int port) {
                 // Loop until client disconnects (recvMsg returns empty on disconnect)
                 while (true) {
                     std::string msg = recvMsg(new_fd);
-                    if (msg.empty()) break;
+                    if (msg=="EXITED(C-1)") break;
                     std::cout << msg << '\n';
                 }
             }).detach();
@@ -113,7 +113,7 @@ std::string recvMsg(int id) {
         int result = recv(id, msg.data() + bytesR, bytesL, 0);
         if (result <= 0) {
             perror("recv failed");
-            return "";
+            return "EXITED(C-1)";
         }
         bytesR += result;
         bytesL -= result;

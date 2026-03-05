@@ -2,21 +2,20 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Linux-pink)
 # NovusNet
-Forget wrestling with raw sockets or drowning in Boost.Asio boilerplate. NovusNet gets a server and client talking in less than 10 lines of code. Built for for indie devs, beginners, and anyone who's project doesn't need the overkill of larger libraries and the complexity they bring.
+Ever manually set up a project that required networking on your own? You know how hard it is, thats why i'm introducing NovusNet. NN gets a server and client talking in less than 10 lines of code. Built for for indie devs, beginners, and anyone who's project doesn't need the overkill and complexity that larger libraries like Boost.Asio bring.
 # WARNING
 - Any connection is not encrypted yet, expose this code to the internet at your own risk.
 - This is still in super early development, expect occasional bugs, and make sure to report said bugs to me.
-- As of right now, NovusNet servers can only handle 1 client at a time, don't expect much.
 - No Windows support exists yet, this is mainly for Linux systems, I'll add Windows support when the Linux version is truly stable.
 # Why I made this
 Learning sockets as a beginner is rough. The setup is long, 
 the errors are annoying, and even once you get it, you still have 
 to do it all over again every new project.
 
-NovusNet exists so you don't have to struggle. Whether you're just starting 
+NovusNet exists so you don't have to do any of that. Whether you're just starting 
 out with networking or you're an experienced dev who doesn't want 
-to write boilerplate for the hundredth time, NovusNet handles the 
-setup so you can focus on actually building.
+to write boilerplate over and over, NovusNet handles the 
+setup and the later communication, so you can focus on actually shipping your product.
 
 # Code examples
 ## Server
