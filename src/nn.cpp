@@ -111,7 +111,7 @@ std::string recvMsg(int id) {
     int msgL = ntohl(msgL_htonl);
     int bytesR = 0;
     int bytesL = msgL;
-    std::string msg(msgL, 0);
+    std::string msg(msgL, 0);   
 
     while (bytesL > 0) {
         result = recv(id, msg.data() + bytesR, bytesL, 0);
