@@ -10,5 +10,5 @@ void runServer(int port);
 int runClient(std::string ip, int port);
 
 //After connection
-void sendMsg(std::string msg,int id);
+void sendMsg(std::string msg, int id = client_fd);
 std::string recvMsg(int id);
