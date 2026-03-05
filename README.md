@@ -1,6 +1,6 @@
 ![CMake Build](https://github.com/Nullora/NovusNet/actions/workflows/cmake-single-platform.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
+![Platform](https://img.shields.io/badge/platform-Linux-pink)
 # NovusNet
 Forget wrestling with raw sockets or drowning in Boost.Asio boilerplate. NovusNet gets a server and client talking in less than 10 lines of code. Built for for indie devs, beginners, and anyone who's project doesn't need the overkill of larger libraries and the complexity they bring.
 # WARNING
