@@ -1,4 +1,4 @@
-#include"conn.hpp"
+#include"nn.hpp"
 #include<string>
 #include<sys/socket.h>
 #include <netinet/in.h> 
@@ -33,6 +33,9 @@ void runServer(int port) {
         std::cout << "CONNECTED:  " << inet_ntoa(client_addr.sin_addr) << "\n";
         sendMsg("ACCEPTED");
     }
+}
+int runClient(const char* ip, int port){
+    client_fd = socket(AF_INET, SOCK_STREAM, 0);
 }
 void sendMsg(std::string msg){
     int msglength = msg.size();
