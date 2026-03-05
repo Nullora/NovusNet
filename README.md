@@ -39,12 +39,12 @@ int main(){
 
 int main(){
     std::string msg;
-    //runClient(ip,port) connects to a server
-    runClient("127.0.0.1", 9090);
+    //runClient(ip,port) connects to a server and returns a client file descriptor
+    int client = runClient("127.0.0.1", 9090);
     while(true){
         std::getline(std::cin,msg);
-        //sendMsg(string msg) sends data as a string
-        sendMsg(msg);
+        //sendMsg(string msg, int fd) sends data as a string
+        sendMsg(msg,client);
     }
     return 0;
 }

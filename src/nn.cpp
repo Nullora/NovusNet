@@ -84,11 +84,14 @@ void sendMsg(std::string msg, int id) {
     uint32_t msglengthC = htonl(msglength); 
     int bytesL = msglength;
     int bytesS = 0;
+    int result=0;
 
-    send(id, &msglengthC, sizeof(msglengthC), 0);
-
+    result = send(id, &msglengthC, sizeof(msglengthC), 0);
+    if (result < 0) {
+        perror("send failed");
+    }
     while (bytesL > 0) {
-        int result = send(id, msg.c_str() + bytesS, bytesL, 0);
+        result = send(id, msg.c_str() + bytesS, bytesL, 0);
         if (result < 0) {
             perror("send failed");
             break;
