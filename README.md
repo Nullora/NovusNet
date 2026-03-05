@@ -1,16 +1,23 @@
 ![CMake Build](https://github.com/Nullora/NovusNet/actions/workflows/cmake-single-platform.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
 # NovusNet
-NovusNet is a C++ library that helps programmers setup and manage server/client connection easily, removing the unnecessary hassle of setting it all up manually.
+Forget wrestling with raw sockets or drowning in Boost.Asio boilerplate. NovusNet gets a server and client talking in less than 10 lines of code. Built for for indie devs, beginners, and anyone who's project doesn't need the overkill of larger libraries and the complexity they bring.
 # WARNING
 - Any connection is not encrypted yet, expose this code to the internet at your own risk.
 - This is still in super early development, expect occasional bugs, and make sure to report said bugs to me.
 - As of right now, NovusNet servers can only handle 1 client at a time, don't expect much.
-# Note
+## Note
 No Windows support exists yet, this is mainly for Linux systems, I'll add Windows support when the Linux version is truly stable.
 # Why I made this
-I always had trouble working with sockets as a beginner, and even after learning how, it still bothers me how I have to do it manually, so i decided to make NovusNet.
-NN is a tool that sets it all up for you in a few lines of code, simplicity meets efficiency. It manages the initial connection, and the later communication between the server and client.
+Learning sockets as a beginner is rough. The setup is long, 
+the errors are annoying, and even once you get it, you still have 
+to do it all over again every new project.
+
+NovusNet exists so you don't have to struggle. Whether you're just starting 
+out with networking or you're an experienced dev who doesn't want 
+to write boilerplate for the hundredth time, NovusNet handles the 
+setup so you can focus on actually building.
 
 # Code examples
 ## Server
