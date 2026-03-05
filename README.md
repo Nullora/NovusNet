@@ -5,8 +5,43 @@ NovusNet is a C++ library that helps programmers setup servers and clients easil
 - Copy the "include/conn.hpp" file into your own include file.
 - Copy the "src/conn.cpp" file into your own src file.
 - Add line **#include"conn.hpp"** at the top of your main.cpp
-# Usage
-- Functions and all can be found in the GitHub Wiki.
+# Code examples
+## Server
+
+```cpp
+#include"nn.hpp"
+#include<iostream>
+#include<string>
+#include <chrono>
+int main(){
+    runServer(9090);
+    //chrono so loop dosen't tank CPU usage
+    while(!clientConnected){
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    //after clientConnected, receive simple messages
+    while(true){
+        std::cout<<recvMsg()<<"\n";
+    }
+    return 0;
+}
+```
+## Client
+```cpp
+#include "nn.hpp"
+#include <iostream>
+
+int main(){
+    std::string msg;
+    runClient("127.0.0.1", 9090);
+    while(true){
+        std::getline(std::cin,msg);
+        sendMsg(msg);
+    }
+    return 0;
+}
+```
+
 # Why I made this
 I always had trouble working with sockets as a beginner, and even after learning how, it still bothers me how I have to do it manually, so i decided to make NovusNet.
 NN is a tool that sets it all up for you in 5 lines of code, simplicity meets efficency. It manages the initial connection, and the communication between the server and client.
