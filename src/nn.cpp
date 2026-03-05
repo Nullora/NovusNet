@@ -1,18 +1,24 @@
-#include"nn.hpp"
-#include<string>
-#include<sys/socket.h>
-#include <netinet/in.h> 
+#include "nn.hpp"
+#include <string>
+#include <map>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include<cstring>
-#include<iostream>
+#include <cstring>
+#include <iostream>
 #include <netinet/tcp.h>
-using namespace std;
-int client_fd;
-bool clientConnected = false;
+
+// Global state
+int client_fd;                   // most recently connected client fd
+std::map<int, int> clients;      // all clients
+bool clientConnected = false;    // least one client is connected
+int clients_index = 0;           // incremented with each new connection
+
+// spawns a background thread that accepts incoming connections.
+// each accepted client gets their own recv thread.
 void runServer(int port) {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-
     int opt = 1;
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
@@ -21,43 +27,69 @@ void runServer(int port) {
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(port);
 
-    bind(server_fd,(sockaddr*)&addr, sizeof(addr));
+    bind(server_fd, (sockaddr*)&addr, sizeof(addr));
     listen(server_fd, 32);
-
     std::cout << "Server listening on port " << port << "\n";
-    std::thread([server_fd](){
-    while (true) {
-        sockaddr_in client_addr{};
-        socklen_t len = sizeof(client_addr);
-        client_fd = accept(server_fd, (sockaddr*)&client_addr, &len);
-        if (client_fd < 0) continue;
-        std::cout << "CONNECTED:  " << inet_ntoa(client_addr.sin_addr) << "\n";
-        clientConnected = true;
-    }}).detach();
+
+    std::thread([server_fd]() {
+        while (true) {
+            sockaddr_in client_addr{};
+            socklen_t len = sizeof(client_addr);
+
+            // Block until a new client connects
+            client_fd = accept(server_fd, (sockaddr*)&client_addr, &len);
+            if (client_fd < 0) continue;
+
+            // Register the new client
+            clients_index++;
+            clients[clients_index] = client_fd;
+            std::cout << "CONNECTED: " << inet_ntoa(client_addr.sin_addr) << "\n";
+            clientConnected = true;
+
+            // Capture fd by value so it's stable even if client_fd changes
+            int new_fd = client_fd;
+            std::thread([new_fd]() {
+                // Loop until client disconnects (recvMsg returns empty on disconnect)
+                while (true) {
+                    std::string msg = recvMsg(new_fd);
+                    if (msg.empty()) break;
+                    std::cout << msg << '\n';
+                }
+            }).detach();
+        }
+    }).detach();
 }
-int runClient(string ip, int port){
+
+
+int runClient(std::string ip, int port) {
     int client = socket(AF_INET, SOCK_STREAM, 0);
+
     struct sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(port);
-    inet_pton(AF_INET,ip.c_str(),&serverAddress.sin_addr);
-    if(connect(client,(struct sockaddr*)&serverAddress, sizeof(serverAddress))==-1){
+    inet_pton(AF_INET, ip.c_str(), &serverAddress.sin_addr);
+
+    if (connect(client, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
         perror("connect failed");
         return -1;
     }
-    cout<<"connection success: \n";
-    client_fd = client;
-    return 0;
+
+    std::cout << "Connection success\n";
+    return client;
 }
-void sendMsg(std::string msg){
+
+
+void sendMsg(std::string msg, int id) {
     int msglength = msg.size();
-    uint32_t msglengthC = htonl(msglength);
+    uint32_t msglengthC = htonl(msglength); 
     int bytesL = msglength;
     int bytesS = 0;
-    send(client_fd,&msglengthC,sizeof(msglengthC),0);
-    while(bytesL>0){
-        int result = send(client_fd,msg.c_str()+bytesS,bytesL,0);
-        if(result<0){
+
+    send(id, &msglengthC, sizeof(msglengthC), 0);
+
+    while (bytesL > 0) {
+        int result = send(id, msg.c_str() + bytesS, bytesL, 0);
+        if (result < 0) {
             perror("send failed");
             break;
         }
@@ -65,21 +97,27 @@ void sendMsg(std::string msg){
         bytesL -= result;
     }
 }
-std::string recvMsg(){
+
+std::string recvMsg(int id) {
     uint32_t msgL_htonl;
-    recv(client_fd,&msgL_htonl,sizeof(msgL_htonl),0);
+    int client = clients[id];  // unused. kept for future use
+
+    recv(id, &msgL_htonl, sizeof(msgL_htonl), 0);
     int msgL = ntohl(msgL_htonl);
+
     int bytesR = 0;
     int bytesL = msgL;
     std::string msg(msgL, 0);
-    while(bytesL>0){
-        int result = recv(client_fd,msg.data()+bytesR,bytesL,0);
-        if(result<0){
+
+    while (bytesL > 0) {
+        int result = recv(id, msg.data() + bytesR, bytesL, 0);
+        if (result <= 0) {
             perror("recv failed");
-            break;
+            return "";
         }
         bytesR += result;
         bytesL -= result;
     }
+
     return msg;
 }
