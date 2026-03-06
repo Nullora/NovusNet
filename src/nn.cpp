@@ -1,6 +1,7 @@
 #include "nn.hpp"
 #include <string>
 #include <map>
+#include <functional>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -11,10 +12,15 @@
 
 // global state
 int client_fd;                   // most recently connected client fd
-std::map<int, CL> clients;      // all clients
+std::map<int, int> clients;      // all clients
 bool clientConnected = false;    // least one client is connected
 int clients_index = 0;           // incremented with each new connection
-CL client;
+std::function<void(int, std::string)> messageCallback;
+
+void onMessage(std::function<void(int, std::string)> callback){
+    messageCallback = callback;
+}
+
 // spawns a background thread that accepts incoming connections.
 // each accepted client gets their own recv thread.
 void runServer(int port) {
@@ -42,8 +48,7 @@ void runServer(int port) {
 
             // Register the new client
             clients_index++;
-            client.clientFD = client_fd;
-            clients[clients_index] = client;
+            clients[clients_index] = client_fd;
             std::cout << "CONNECTED: " << inet_ntoa(client_addr.sin_addr) << "\n";
             clientConnected = true;
             
@@ -55,7 +60,7 @@ void runServer(int port) {
                 while (true) {
                     std::string msg = recvMsg(new_fd);
                     if (msg=="EXITED(C-178)") break;
-                    
+                    if (messageCallback) messageCallback(new_fd, msg);
                 }
             }).detach();
         }

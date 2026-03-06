@@ -1,11 +1,12 @@
-#include"nn.hpp"
-#include<iostream>
-#include<chrono>
+#include "nn.hpp"
+#include <iostream>
+#include <chrono>
 
 int main(){
     runServer(9090);
     while(true){
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        onMessage([](int clientID, std::string msg){
+            std::cout << "Client " << clientID << ": " << msg << "\n";
+        });
     }
-    return 0;
 }

@@ -21,15 +21,17 @@ setup and the later communication, so you can focus on actually shipping your pr
 ## Server
 
 ```cpp
-#include"nn.hpp"
-#include<iostream>
-#include<chrono>
+#include "nn.hpp"
+#include <iostream>
+#include <chrono>
+
 int main(){
     runServer(9090);
     while(true){
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        onMessage([](int clientID, std::string msg){
+            std::cout << "Client " << clientID << ": " << msg << "\n";
+        });
     }
-    return 0;
 }
 ```
 ## Client
@@ -39,11 +41,11 @@ int main(){
 
 int main(){
     std::string msg;
-    //runClient(ip,port) connects to a server and returns a client file descriptor
+    //runClient(ip,port) connects to a server
     int client = runClient("127.0.0.1", 9090);
     while(true){
         std::getline(std::cin,msg);
-        //sendMsg(string msg, int fd) sends data as a string
+        //sendMsg(string msg) sends data as a string
         sendMsg(msg,client);
     }
     return 0;
