@@ -9,7 +9,7 @@
 #include <iostream>
 #include <netinet/tcp.h>
 
-// Global state
+// global state
 int client_fd;                   // most recently connected client fd
 std::map<int, int> clients;      // all clients
 bool clientConnected = false;    // least one client is connected
