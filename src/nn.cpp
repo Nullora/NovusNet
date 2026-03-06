@@ -10,7 +10,6 @@
 #include <iostream>
 #include <netinet/tcp.h>
 
-// global state
 int client_fd;                   // most recently connected client fd
 std::map<int, int> clients;      // all clients
 bool clientConnected = false;    // least one client is connected
@@ -46,17 +45,16 @@ void runServer(int port) {
             client_fd = accept(server_fd, (sockaddr*)&client_addr, &len);
             if (client_fd < 0) continue;
 
-            // Register the new client
+            // register the new client
             clients_index++;
             clients[clients_index] = client_fd;
             std::cout << "CONNECTED: " << inet_ntoa(client_addr.sin_addr) << "\n";
             clientConnected = true;
             
-
-            // Capture fd by value so it's stable even if client_fd changes
+            sendMsg(std::to_string(clients_index),client_fd);
+            // stabilize client_fd to pass to thread
             int new_fd = client_fd;
             std::thread([new_fd]() {
-                // Loop until client disconnects (recvMsg returns empty on disconnect)
                 while (true) {
                     std::string msg = recvMsg(new_fd);
                     if (msg=="EXITED(C-178)") break;
