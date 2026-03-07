@@ -48,7 +48,6 @@ void runServer(int port) {
             clients_index++;
             clients[clients_index] = client_fd;
             std::cout << "CONNECTED: " << inet_ntoa(client_addr.sin_addr) << "\n";
-            clientConnected = true;
             
             sendMsg(std::to_string(clients_index),client_fd);
             // stabilize client_fd to pass to thread
