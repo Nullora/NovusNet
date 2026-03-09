@@ -23,5 +23,7 @@ sendMsg(std::string msg, int id);
 //Receiveing from client to server, you can just use onMessage, thats what it does.
 recvMsg(int id)
 ```
+## Note
+- If you found any bugs, please let me know. Open a discussion in "Issues" or send me a private email and I'll happily fix it!
 **Made by Mehdi B.R (Nullora @ Novus)**
 
