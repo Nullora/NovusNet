@@ -28,8 +28,12 @@ void onMessage(std::function<void(int, std::string)> callback){
 void runServer(int port) {
     // initialize OpenSSL and load certificates
     SSL_CTX* ctx = SSL_CTX_new(TLS_server_method());
-    SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM);
-    SSL_CTX_use_PrivateKey_file(ctx, "key.pem", SSL_FILETYPE_PEM);
+    if (!SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM)) {
+        ERR_print_errors_fp(stderr);
+    }
+    if (!SSL_CTX_use_PrivateKey_file(ctx, "key.pem", SSL_FILETYPE_PEM)) {
+        ERR_print_errors_fp(stderr);
+    }
     ssl_ctx = ctx;
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     int opt = 1;
@@ -92,9 +96,9 @@ int runClient(std::string ip, int port) {
         return -1;
     }
     SSL_CTX* client_ctx = SSL_CTX_new(TLS_client_method());
+    SSL_CTX_set_verify(client_ctx, SSL_VERIFY_NONE, nullptr);
     SSL* ssl = SSL_new(client_ctx);
     SSL_set_fd(ssl, client);
-    SSL_CTX_set_verify(client_ctx, SSL_VERIFY_NONE, nullptr);
     if (SSL_connect(ssl) <= 0) {
         ERR_print_errors_fp(stderr);
         return -1;
