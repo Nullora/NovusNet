@@ -4,7 +4,7 @@
 # NovusNet
 Ever manually set up a project that required networking on your own? You know how hard it is, thats why i'm introducing NovusNet. NN gets a server and client talking in less than 10 lines of code. Built for for indie devs, beginners, and anyone who's project doesn't need the overkill and complexity that larger libraries like Boost.Asio bring. Fully encrypted communication between server and clients.
 # WARNING
-- Although encryption is now added, anyone can still connect, I'll add Access Control soon enough, if I take too long, make your own ;)
+- Although encryption is now added, anyone can still connect, I'll add Access Control soon enough, if I take too long, make your own.
 - This is still in super early development, expect occasional bugs, and make sure to report said bugs to me.
 - No Windows support exists yet, this is mainly for Linux systems, I'll add Windows support when the Linux version is truly stable.
 # Why I made this
