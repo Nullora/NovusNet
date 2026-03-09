@@ -85,3 +85,5 @@ target_link_libraries(PROJECTNAME OpenSSL::SSL OpenSSL::Crypto)
 - Compile and check if it works, sometimes code editors highight the **#include"nn.hpp"** in red, so check incase it's a real error instead of the usual false alarm.
 # Updates
 - Encryption is now fully working as intended. make sure to have the key.pem and cert.pem in your build folder when you run your server.
+
+**Made by Mehdi B.R (Nullora @ Novus)**
