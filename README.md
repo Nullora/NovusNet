@@ -27,6 +27,7 @@ setup and the later communication, so you can focus on actually shipping your pr
 #include <chrono>
 
 int main(){
+    //runServer takes port number only: runServer(int port)
     runServer(9090);
     //"onMessage" returns clientNumber and msg of any received message from any client.
     onMessage([](int clientN, std::string msg){
@@ -46,7 +47,7 @@ int main(){
 
 int main(){
     std::string msg;
-    //runClient(ip,port) connects to a server
+    //runClient(ip,port) connects to a server and returns an int used to address the server
     int client = runClient("127.0.0.1", 9090);
     //receive client id and assign it for later use
     msg = recvMsg(client);
