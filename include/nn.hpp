@@ -2,7 +2,6 @@
 #include <thread>
 #include<string>
 #include <functional>
-extern int client_fd;
 //Initialization
 void onMessage(std::function<void(int, std::string)> callback);
 //Connecting

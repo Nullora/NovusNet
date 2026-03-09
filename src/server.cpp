@@ -5,8 +5,8 @@
 int main(){
     runServer(9090);
     while(true){
-        onMessage([](int clientID, std::string msg){
-            std::cout << "Client " << clientID << ": " << msg << "\n";
+        onMessage([](int clientFD, std::string msg){
+            std::cout << "Client " << clientFD << ": " << msg << "\n";
         });
     }
 }
