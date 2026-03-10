@@ -25,7 +25,7 @@ void onMessage(std::function<void(int, std::string)> callback){
 
 // spawns a background thread that accepts incoming connections.
 // each accepted client gets their own recv thread.
-void runServer(int port) {
+void runServer(int port, std::string password) {
     // initialize OpenSSL and load certificates
     SSL_CTX* ctx = SSL_CTX_new(TLS_server_method());
     if (!SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM)) {
@@ -48,11 +48,10 @@ void runServer(int port) {
     listen(server_fd, 32);
     std::cout << "Server listening on port " << port << "\n";
 
-    std::thread([server_fd]() {
+    std::thread([server_fd,password]() {
         while (true) {
             sockaddr_in client_addr{};
             socklen_t len = sizeof(client_addr);
-
             // block until a new client connects
             client_fd = accept(server_fd, (sockaddr*)&client_addr, &len);
             if (client_fd < 0) continue;
@@ -63,27 +62,37 @@ void runServer(int port) {
                 ERR_print_errors_fp(stderr);
                 continue;
             }
+            //check password (Access control)
             // register the new client
             clients_index++;
             clients[clients_index] = ssl;
-            std::cout << "CONNECTED: " << inet_ntoa(client_addr.sin_addr) << "\n";
-            
-            sendMsg(std::to_string(clients_index),clients_index);
-            // stabilize client_fd to pass to thread
-            int new_fd = clients_index;
-            std::thread([new_fd]() {
-                while (true) {
-                    std::string msg = recvMsg(new_fd);
-                    if (msg=="EXITED(C-178)") break;
-                    if (messageCallback) messageCallback(new_fd, msg);
-                }
-            }).detach();
+            //check password (Access control)
+            std::string recvdp = recvMsg(clients_index);
+            if(recvdp!=password){
+                std::cout << "KICKED (wrong password): " << inet_ntoa(client_addr.sin_addr) << "\n";
+                SSL_shutdown(clients[clients_index]);
+                SSL_free(clients[clients_index]);
+                close(client_fd);
+                clients.erase(clients_index);
+            }else{
+                std::cout << "CONNECTED: " << inet_ntoa(client_addr.sin_addr) << "\n";
+                sendMsg(std::to_string(clients_index),clients_index);
+                // stabilize client_index to pass to thread
+                int new_fd = clients_index;
+                std::thread([new_fd]() {
+                    while (true) {
+                        std::string msg = recvMsg(new_fd);
+                        if (msg=="EXITED(C-178)") break;
+                        if (messageCallback) messageCallback(new_fd, msg);
+                    }
+                }).detach();
+            }
         }
     }).detach();
 }
 
 
-int runClient(std::string ip, int port) {
+int runClient(std::string ip, int port,std::string password) {
     int client = socket(AF_INET, SOCK_STREAM, 0);
 
     struct sockaddr_in serverAddress;
@@ -104,8 +113,8 @@ int runClient(std::string ip, int port) {
         return -1;
     }
     client_ssl = ssl;
-
-    std::cout << "Connection success\n";
+    sendMsg(password,client);
+    std::cout << "Request sent\n";
     return client;
 }
 

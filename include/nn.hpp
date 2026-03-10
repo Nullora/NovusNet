@@ -8,8 +8,8 @@ extern std::map<int, SSL*> clients;
 //Initialization
 void onMessage(std::function<void(int, std::string)> callback);
 //Connecting
-void runServer(int port);
-int runClient(std::string ip, int port);
+void runServer(int port, std::string password);
+int runClient(std::string ip, int port,std::string password);
 
 //After connection
 void sendMsg(std::string msg, int id);
