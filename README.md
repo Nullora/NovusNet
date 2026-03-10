@@ -4,7 +4,7 @@
 # NovusNet
 Ever manually set up a project that required networking on your own? You know how hard it is, thats why i'm introducing NovusNet. NN gets a server and client talking in less than 10 lines of code. Built for indie devs, beginners, and anyone who's project doesn't need the overkill and complexity that larger libraries like Boost.Asio bring. Fully encrypted communication between server and clients.
 # WARNING
-- Although encryption is now added, anyone can still connect, I'll add Access Control soon enough, if I take too long, make your own.
+- As this is an ongoing project, scroll down to "Updates" to keep up to date, syntax may change in a short period.
 - This is still in super early development, expect occasional bugs, and make sure to report said bugs to me.
 - No Windows support exists yet, this is mainly for Linux systems, I'll add Windows support when the Linux version is truly stable.
 # Why I made this
@@ -84,6 +84,7 @@ target_link_libraries(PROJECTNAME OpenSSL::SSL OpenSSL::Crypto)
 ```
 - Compile and check if it works, sometimes code editors highight the **#include"nn.hpp"** in red, so check incase it's a real error instead of the usual false alarm.
 # Updates
-- Encryption is now fully working as intended. make sure to have the key.pem and cert.pem in your build folder when you run your server.
+- 9/3/26: Encryption is now fully working as intended. make sure to have the key.pem and cert.pem in your build folder when you run your server.
+- 10/3/26: Access Control is now added, just assign the password as shown in Documentation.md and no one but you and the password holders can join (Don't share your password on accident!) I'll add encryption for the passwords too because stored in plain text is a bit unsafe, but it works for now.
 
 **Made by Mehdi B.R (Nullora @ Novus)**
