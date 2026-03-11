@@ -11,10 +11,16 @@
 #include <netinet/tcp.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <fcntl.h>   // For O_RDONLY, etc.
+#include <cerrno>    // For errno
+#include<fstream>
+#include <endian.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 int client_fd;                   // most recently connected client fd
 std::map<int, SSL*> clients;      // all clients
-int clients_index = 0;           // 
+int clients_index = 0;           // increment each time client connects
 std::function<void(int, std::string)> messageCallback;
 SSL_CTX* ssl_ctx = nullptr;
 SSL* client_ssl = nullptr;
@@ -169,3 +175,26 @@ std::string recvMsg(int id) {
 
     return msg;
 }
+
+//NFTP
+bool sendFile(const char* filepath, int id){
+    SSL* ssl = (clients.count(id)) ? clients[id] : client_ssl;
+    char buffer[16384];
+    int fd = open(filepath,O_RDONLY);
+    if(fd<0) return false;
+    struct stat st;
+    fstat(fd,&st);
+    uint64_t size = st.st_size;
+    uint64_t netsize = htobe64(size);
+    std::string netsizeStr = std::to_string(netsize);
+    sendMsg(netsizeStr, id);
+    int bytesL = size;
+    int bytesS = 0;
+    int result=0;
+    while(bytesL>0){
+        result = read(fd,buffer,sizeof(buffer));
+        bytesS += SSL_write(ssl,buffer,bytesL);
+
+    }
+}
+bool recvFile(std::string folderpath, int id);
