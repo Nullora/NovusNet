@@ -201,7 +201,32 @@ bool sendFile(const char* filepath, int id){
         bytesS += s;
         bytesL -= s;
     }
+    return true;
 }
 bool recvFile(std::string folderpath, int id){
-    
+    SSL* ssl = (clients.count(id)) ? clients[id] : client_ssl;
+    char buffer[16384];
+    uint64_t netsize;
+    if(SSL_read(ssl,&netsize,sizeof(netsize))<=0){
+        perror("file recv failed");
+        return false;
+    }
+    uint64_t filesize =  be64toh(netsize);
+    std::string filename = recvMsg(id);
+    uint64_t bytesL = filesize;
+    uint64_t bytesR = 0;
+    int s=0;
+    int result=0;
+    std::string fullpath = folderpath + "/" + filename;
+    int outfd = open(fullpath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if(outfd < 0) return false;
+    while(bytesL>0){
+        result = SSL_read(ssl, buffer, std::min(bytesL, (uint64_t)sizeof(buffer)));
+        if(result<0) return false;
+        bytesL -= result;
+        bytesR += result;
+        write(outfd, buffer, result);
+    }
+    return true;
+    close(outfd);
 }
