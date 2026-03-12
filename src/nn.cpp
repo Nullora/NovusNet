@@ -163,7 +163,7 @@ std::string recvMsg(int id) {
     int result=0;
 
     result = SSL_read(ssl, &msgL_htonl, sizeof(msgL_htonl));
-    if (result <= 0) {
+    if (result < 0) {
         perror("recv failed");
         return "EXITED(C-178)";
     }
