@@ -177,11 +177,11 @@ std::string recvMsg(int id) {
 }
 
 //NFTP
-bool sendFile(const char* filepath, int id){
+bool sendFile(std::string filepath, int id){
     SSL* ssl = (clients.count(id)) ? clients[id] : client_ssl;
     std::string filepathSTR = filepath;
     char buffer[16384];
-    int fd = open(filepath,O_RDONLY);
+    int fd = open(filepath.c_str(),O_RDONLY);
     if(fd<0) return false;
     struct stat st;
     fstat(fd,&st);
@@ -227,6 +227,6 @@ bool recvFile(std::string folderpath, int id){
         bytesR += result;
         write(outfd, buffer, result);
     }
-    return true;
     close(outfd);
+    return true;
 }
