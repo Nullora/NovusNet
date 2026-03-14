@@ -17,7 +17,6 @@
 #include <endian.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
 int client_fd;                   // most recently connected client fd
 std::map<int, SSL*> clients;      // all clients
 int clients_index = 0;           // increment each time client connects
@@ -52,7 +51,7 @@ void runServer(int port, std::string password) {
 
     bind(server_fd, (sockaddr*)&addr, sizeof(addr));
     listen(server_fd, 32);
-    std::cout << "Server listening on port " << port << "\n";
+    std::cout << "Server on port " << port << "\n";
 
     std::thread([server_fd,password]() {
         while (true) {
