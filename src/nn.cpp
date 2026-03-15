@@ -202,7 +202,7 @@ bool sendFile(std::string filepath, int id){
     int result=0;
     while(bytesL>0){
         result = read(fd,buffer,sizeof(buffer));
-        if(result<0) return false;
+        if(result<=0) return false;
         s = SSL_write(ssl,buffer,result);
         bytesS += s;
         bytesL -= s;
@@ -228,7 +228,7 @@ bool recvFile(std::string folderpath, int id){
     if(outfd < 0) return false;
     while(bytesL>0){
         result = SSL_read(ssl, buffer, std::min(bytesL, (uint64_t)sizeof(buffer)));
-        if(result<0) return false;
+        if(result<=0) return false;
         bytesL -= result;
         bytesR += result;
         write(outfd, buffer, result);
