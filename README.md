@@ -7,6 +7,7 @@ Now featuring NFTP (Novus File Transfer Protocol); send and receive files of any
 # WARNING
 - As this is an ongoing project, scroll down to "Updates" to keep up to date, syntax may change in a short period.
 - This is still in super early development, expect occasional bugs, and make sure to report said bugs to me.
+- NFTP has not been tested thorougly with large files, don't rely on it until I truly stress test it, which is happening as I write this.
 - No Windows support exists yet, this is mainly for Linux systems, I'll add Windows support when the Linux version is truly stable.
 # Why I made this
 Learning sockets as a beginner is rough. The setup is long, 
