@@ -182,6 +182,14 @@ std::string recvMsg(int id) {
     }
     return msg;
 }
+auto printProgress = [](uint64_t done, uint64_t total) {
+    int percent = (done * 100) / total;
+    int filled = percent / 5; // 20 chars wide
+    std::cout << "\r[";
+    for (int i = 0; i < 20; i++)
+        std::cout << (i < filled ? '#' : '-');
+    std::cout << "] " << percent << "%" << std::flush;
+};
 //NFTP (Novus File Transfer Protocol)
 bool sendFile(std::string filepath, int id){
     SSL* ssl = (clients.count(id)) ? clients[id] : client_ssl;
@@ -238,11 +246,3 @@ bool recvFile(std::string folderpath, int id){
     close(outfd);
     return true;
 }
-auto printProgress = [](uint64_t done, uint64_t total) {
-    int percent = (done * 100) / total;
-    int filled = percent / 5; // 20 chars wide
-    std::cout << "\r[";
-    for (int i = 0; i < 20; i++)
-        std::cout << (i < filled ? '#' : '-');
-    std::cout << "] " << percent << "%" << std::flush;
-};
