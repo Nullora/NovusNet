@@ -206,6 +206,7 @@ bool sendFile(std::string filepath, int id){
         s = SSL_write(ssl,buffer,result);
         bytesS += s;
         bytesL -= s;
+        printProgress(bytesS,size);
     }
     return true;
 }
@@ -232,7 +233,16 @@ bool recvFile(std::string folderpath, int id){
         bytesL -= result;
         bytesR += result;
         write(outfd, buffer, result);
+        printProgress(bytesR,filesize);
     }
     close(outfd);
     return true;
 }
+auto printProgress = [](uint64_t done, uint64_t total) {
+    int percent = (done * 100) / total;
+    int filled = percent / 5; // 20 chars wide
+    std::cout << "\r[";
+    for (int i = 0; i < 20; i++)
+        std::cout << (i < filled ? '#' : '-');
+    std::cout << "] " << percent << "%" << std::flush;
+};
