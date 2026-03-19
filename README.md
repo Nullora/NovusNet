@@ -23,7 +23,7 @@ setup and the later communication, so you can focus on actually shipping your pr
 Check **Documentation.md**, it has a detailed explanation of each function, and check out the link below for an example project to further help you understand.
 
 # Code examples
-- An actual example project can be found at [NovusChat](https://github.com/Nullora/NovusChat). It is a pure NovusNet program.
+- An actual example project can be found at [NovusSync](https://github.com/Nullora/NovusSync). It is a pure NovusNet program.
 ## Server
 
 ```cpp
