@@ -1,7 +1,7 @@
 //This library is made by @Nullora on Github. The link can be found here, with documentation aswell: https://github.com/Nullora/NovusNet
 //NovusNet is a c++ networking library made to facilitate connection between devices while keeping it fast and secure.
 //It's fully free and anyone can distribute/use it.
-//Last updated: 16/3/26
+//Last updated: 27/3/26
 #include "nn.hpp"
 #include <string>
 #include <map>
