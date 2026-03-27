@@ -1,8 +1,7 @@
-//This library is made by @Nullora on Github. The link can be found here, and documentation aswell: https://github.com/Nullora/NovusNet
+//This library is made by @Nullora on Github. The link can be found here, with documentation aswell: https://github.com/Nullora/NovusNet
 //NovusNet is a c++ networking library made to facilitate connection between devices while keeping it fast and secure.
 //It's fully free and anyone can distribute/use it.
-//Last updated: 14/3/26
-
+//Last updated: 16/3/26
 #include "nn.hpp"
 #include <string>
 #include <map>
@@ -22,12 +21,15 @@
 #include <endian.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include<mutex>
+#include<atomic>
 int client_fd;                   // most recently connected client fd
 std::map<int, SSL*> clients;      // all clients
-int clients_index = 0;           // increment each time client connects
+std::atomic<int> clients_index = 0;         // increment each time client connects
 std::function<void(int, std::string)> messageCallback;
 SSL_CTX* ssl_ctx = nullptr;
 SSL* client_ssl = nullptr;
+std::mutex clients_mutex;
 
 void onMessage(std::function<void(int, std::string)> callback){
     messageCallback = callback;
@@ -74,15 +76,21 @@ void runServer(int port, std::string password) {
             //check password (Access control)
             // register the new client
             clients_index++;
-            clients[clients_index] = ssl;
+            {
+                std::lock_guard<std::mutex> lock(clients_mutex);
+                clients[clients_index] = ssl;
+            }
             //check password (Access control)
             std::string recvdp = recvMsg(clients_index);
             if(recvdp!=password){
                 std::cout << "KICKED (wrong password): " << inet_ntoa(client_addr.sin_addr) << "\n";
-                SSL_shutdown(clients[clients_index]);
-                SSL_free(clients[clients_index]);
+                {
+                    std::lock_guard<std::mutex> lock(clients_mutex);
+                    SSL_shutdown(clients[clients_index]);
+                    SSL_free(clients[clients_index]);
+                    clients.erase(clients_index);
+                }
                 close(client_fd);
-                clients.erase(clients_index);
             }else{
                 std::cout << "CONNECTED: " << inet_ntoa(client_addr.sin_addr) << "\n";
                 sendMsg(std::to_string(clients_index),clients_index);
@@ -95,10 +103,13 @@ void runServer(int port, std::string password) {
                         std::string msg = recvMsg(new_ci);
                         if (msg=="EXITED(C-178)"){
                             std::cout<<"client "<<new_ci<<" disconnected, cleaning.\n";
-                            SSL_shutdown(clients[new_ci]);
-                            SSL_free(clients[new_ci]);
+                            {
+                                std::lock_guard<std::mutex> lock(clients_mutex);
+                                SSL_shutdown(clients[new_ci]);
+                                SSL_free(clients[new_ci]);
+                                clients.erase(new_ci);
+                            }
                             close(new_fd);
-                            clients.erase(new_ci);
                             break;
                         }
                         if (messageCallback) messageCallback(new_ci, msg);
@@ -139,7 +150,11 @@ int runClient(std::string ip, int port,std::string password) {
 }
 //NMTS (Novus Message Transfer System)
 void sendMsg(std::string msg, int id) {
-    SSL* ssl = (clients.count(id)) ? clients[id] : client_ssl;
+    SSL* ssl;
+    {
+        std::lock_guard<std::mutex> lock(clients_mutex);
+        ssl = (clients.count(id)) ? clients[id] : client_ssl;
+    }
     int msglength = msg.size();
     uint32_t msglengthC = htonl(msglength); 
     int bytesL = msglength;
@@ -161,7 +176,11 @@ void sendMsg(std::string msg, int id) {
     }
 }
 std::string recvMsg(int id) {
-    SSL* ssl = (clients.count(id)) ? clients[id] : client_ssl;
+    SSL* ssl;
+    {
+        std::lock_guard<std::mutex> lock(clients_mutex);
+        ssl = (clients.count(id)) ? clients[id] : client_ssl;
+    }
     uint32_t msgL_htonl;
     int result=0;
 
