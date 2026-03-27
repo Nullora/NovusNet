@@ -15,17 +15,18 @@
 #include <netinet/tcp.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#include <fcntl.h>   // for O_RDONLY.
-#include <cerrno>    // for errno
+#include <fcntl.h>
+#include <cerrno> 
 #include<fstream>
 #include <endian.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include<mutex>
 #include<atomic>
-int client_fd;                   // most recently connected client fd
-std::map<int, SSL*> clients;      // all clients
-std::atomic<int> clients_index = 0;         // increment each time client connects
+
+
+std::map<int, SSL*> clients;
+std::atomic<int> clients_index = 0;
 std::function<void(int, std::string)> messageCallback;
 SSL_CTX* ssl_ctx = nullptr;
 SSL* client_ssl = nullptr;
