@@ -1,6 +1,6 @@
-//This library is made by @Nullora on Github. The link can be found here, and documentation aswell: https://github.com/Nullora/NovusNet
+//This library is made by @Nullora on Github. The link can be found here, with documentation aswell: https://github.com/Nullora/NovusNet
 //NovusNet is a c++ networking library made to facilitate connection between devices while keeping it fast and secure.
-//It's fully free and anyone can distribute/use it. im testing stuff rn.
+//It's fully free and anyone can distribute/use it.
 //Last updated: 27/3/26
 #include "nn.hpp"
 #include <string>
@@ -16,14 +16,13 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <fcntl.h>
-#include <cerrno>
-#include <fstream>
+#include <cerrno> 
+#include<fstream>
 #include <endian.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <mutex>
-#include <atomic>
-#include<memory>
+#include<mutex>
+#include<atomic>
 
 
 std::map<int, SSL*> clients;
@@ -33,19 +32,6 @@ SSL_CTX* ssl_ctx = nullptr;
 SSL* client_ssl = nullptr;
 std::mutex clients_mutex;
 
-std::map<int, std::shared_ptr<std::mutex>> client_io_mutexes;
-std::mutex client_ssl_io_mutex;
-
-std::shared_ptr<std::mutex> getIOMutex(int id) {
-    if (id == 0) return nullptr;
-    std::lock_guard<std::mutex> lock(clients_mutex);
-    auto it = client_io_mutexes.find(id);
-    if (it != client_io_mutexes.end()) return it->second;
-    auto m = std::make_shared<std::mutex>();
-    client_io_mutexes[id] = m;
-    return m;
-}
-
 void onMessage(std::function<void(int, std::string)> callback){
     messageCallback = callback;
 }
@@ -54,10 +40,14 @@ SSL* getSSL(int id) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     auto it = clients.find(id);
     if (it != clients.end()) return it->second;
-    return client_ssl;
+    return client_ssl; // Fallback for client-side
 }
 
+
+// spawns a background thread that accepts incoming connections.
+// each accepted client gets their own recv thread.
 void runServer(int port, std::string password) {
+    // initialize OpenSSL and load certificates
     SSL_CTX* ctx = SSL_CTX_new(TLS_server_method());
     if (!SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM)) {
         ERR_print_errors_fp(stderr);
@@ -92,6 +82,7 @@ void runServer(int port, std::string password) {
             socklen_t len = sizeof(client_addr);
             int new_fd = accept(server_fd, (sockaddr*)&client_addr, &len);
             if(new_fd < 0) continue;
+            //wrap fd in ssl
             SSL* ssl = SSL_new(ssl_ctx);
             SSL_set_fd(ssl, new_fd);
             if (SSL_accept(ssl) <= 0) {
@@ -100,12 +91,14 @@ void runServer(int port, std::string password) {
                 close(new_fd);
                 continue;
             }
+            //check password (Access control)
+            // register the new client
             int ci = ++clients_index;
             {
                 std::lock_guard<std::mutex> lock(clients_mutex);
                 clients[ci] = ssl;
-                client_io_mutexes[ci] = std::make_shared<std::mutex>();
             }
+            //check password (Access control)
             std::string recvdp = recvMsg(ci);
             if(recvdp!=password){
                 std::cout << "KICKED (wrong password): " << inet_ntoa(client_addr.sin_addr) << "\n";
@@ -114,12 +107,12 @@ void runServer(int port, std::string password) {
                     SSL_shutdown(clients[ci]);
                     SSL_free(clients[ci]);
                     clients.erase(ci);
-                    client_io_mutexes.erase(ci);
                 }
                 close(new_fd);
             }else{
                 std::cout << "CONNECTED: " << inet_ntoa(client_addr.sin_addr) << "\n";
                 sendMsg(std::to_string(ci),ci);
+                // stabilize client_index to pass to thread
                 int new_ci = ci;
                 SSL* new_ssl = ssl;
                 std::thread([new_ci,new_ssl,new_fd]() {
@@ -132,7 +125,6 @@ void runServer(int port, std::string password) {
                                 SSL_shutdown(clients[new_ci]);
                                 SSL_free(clients[new_ci]);
                                 clients.erase(new_ci);
-                                client_io_mutexes.erase(new_ci);
                             }
                             close(new_fd);
                             break;
@@ -144,7 +136,6 @@ void runServer(int port, std::string password) {
         }
     }).detach();
 }
-
 int runClient(std::string ip, int port,std::string password) {
     int client = socket(AF_INET, SOCK_STREAM, 0);
     if(client<0){
@@ -183,7 +174,7 @@ int runClient(std::string ip, int port,std::string password) {
     std::cout << "Request sent\n";
     return client;
 }
-
+//NMTS (Novus Message Transfer System)
 bool sendMsg(std::string msg, int id) {
     SSL* ssl;
     {
@@ -191,7 +182,7 @@ bool sendMsg(std::string msg, int id) {
         ssl = (clients.count(id)) ? clients[id] : client_ssl;
     }
     int msglength = msg.size();
-    uint32_t msglengthC = htonl(msglength);
+    uint32_t msglengthC = htonl(msglength); 
     int bytesL = msglength;
     int bytesS = 0;
     int result=0;
@@ -218,7 +209,6 @@ bool sendMsg(std::string msg, int id) {
     }
     return true;
 }
-
 std::string recvMsg(int id) {
     SSL* ssl;
     {
@@ -243,7 +233,7 @@ std::string recvMsg(int id) {
     if(msgL>4*1024*1024 || msgL<=0) return "EXITED(C-178)";
     int bytesR = 0;
     int bytesL = msgL;
-    std::string msg(msgL, 0);
+    std::string msg(msgL, 0);   
 
     while (bytesL > 0) {
         result = SSL_read(ssl, msg.data() + bytesR, bytesL);
@@ -256,25 +246,16 @@ std::string recvMsg(int id) {
     }
     return msg;
 }
-
 auto printProgress = [](uint64_t done, uint64_t total) {
     int percent = (done * 100) / total;
-    int filled = percent / 5;
+    int filled = percent / 5; // 20 chars wide
     std::cout << "\r[";
     for (int i = 0; i < 20; i++)
         std::cout << (i < filled ? '#' : '-');
     std::cout << "] " << percent << "% " << std::flush;
 };
-
+//NFTP (Novus File Transfer Protocol)
 bool sendFile(std::string filepath, int id) {
-    std::shared_ptr<std::mutex> io_mtx;
-    {
-        std::lock_guard<std::mutex> lock(clients_mutex);
-        auto it = client_io_mutexes.find(id);
-        if (it != client_io_mutexes.end()) io_mtx = it->second;
-    }
-    std::unique_lock<std::mutex> io_lock(id == 0 ? client_ssl_io_mutex : *io_mtx);
-
     SSL* ssl = getSSL(id);
     if (!ssl) return false;
 
@@ -285,17 +266,13 @@ bool sendFile(std::string filepath, int id) {
     fstat(fd, &st);
     uint64_t size = st.st_size;
     uint64_t netsize = htobe64(size);
+    
+    // Header: Size
+    if (SSL_write(ssl, &netsize, sizeof(netsize)) <= 0) return false;
 
-    if (SSL_write(ssl, &netsize, sizeof(netsize)) <= 0) {
-        close(fd);
-        return false;
-    }
-
+    // Header: Name
     std::string filename = filepath.substr(filepath.find_last_of("/\\") + 1);
-    if (!sendMsg(filename, id)) {
-        close(fd);
-        return false;
-    }
+    if (!sendMsg(filename, id)) return false;
 
     char buffer[16384];
     uint64_t totalSent = 0;
@@ -318,52 +295,31 @@ bool sendFile(std::string filepath, int id) {
     close(fd);
     return true;
 }
-
 bool recvFile(std::string folderpath, int id){
-    std::shared_ptr<std::mutex> io_mtx;
-    SSL* ssl;
-    {
-        std::lock_guard<std::mutex> lock(clients_mutex);
-        ssl = (clients.count(id)) ? clients[id] : client_ssl;
-        auto it = client_io_mutexes.find(id);
-        if (it != client_io_mutexes.end()) io_mtx = it->second;
-    }
-    std::unique_lock<std::mutex> io_lock(id == 0 ? client_ssl_io_mutex : *io_mtx);
-
+    SSL* ssl = (clients.count(id)) ? clients[id] : client_ssl;
     char buffer[16384];
     uint64_t netsize;
     if(SSL_read(ssl,&netsize,sizeof(netsize))<=0){
         perror("file recv failed");
         return false;
     }
-    uint64_t filesize = be64toh(netsize);
+    uint64_t filesize =  be64toh(netsize);
     if(filesize>10ULL*1024*1024*1024 || filesize<=0) return false;
-
     std::string filename = recvMsg(id);
     if(filename.empty() || filename.size() > 255) return false;
     if(filename.find('/') != std::string::npos) return false;
-
     uint64_t bytesL = filesize;
     uint64_t bytesR = 0;
     int result;
     std::string fullpath = folderpath + "/" + filename;
     int outfd = open(fullpath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if(outfd < 0) return false;
-
     while(bytesL>0){
         result = SSL_read(ssl, buffer, std::min(bytesL, (uint64_t)sizeof(buffer)));
-        if(result<=0){
-            close(outfd);
-            return false;
-        }
+        if(result<=0) return false;
         bytesL -= result;
         bytesR += result;
-        ssize_t written = write(outfd, buffer, result);
-        if(written != result){
-            perror("write failed");
-            close(outfd);
-            return false;
-        }
+        write(outfd, buffer, result);
         printProgress(bytesR,filesize);
     }
     close(outfd);
