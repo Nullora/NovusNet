@@ -1,22 +1,22 @@
 # NovusNet
 
-NovusNet is a lightweight networking library designed to simplify client-server communication. It enables developers to establish secure connections and exchange data in just a few lines of code—without the complexity of large frameworks such as Boost.Asio.
+NovusNet is a lightweight networking library designed to simplify client server communication. It enables developers to establish secure connections and exchange data in just a few lines of code without the complexity of large frameworks such as Boost.Asio.
 
 Built with indie developers and beginners in mind, NovusNet abstracts away low-level socket handling and encryption, allowing you to focus on building your application instead of managing networking boilerplate.
 
 # Key Features
-Minimal Setup — Get a client and server communicating in under 10 lines of code
-Secure Communication — Built-in encryption for all data transmission
-NFTP (Novus File Transfer Protocol) — Send and receive files of any size with a single function call
-Lightweight Design — No unnecessary overhead or complexity
-Beginner-Friendly — Designed for ease of use and rapid integration
+- Minimal Setup: Get a client and server communicating in under 10 lines of code
+- Secure Communication: Built-in encryption for all data transmission
+- NFTP (Novus File Transfer Protocol): Send and receive files of any size with a single function call
+- Lightweight Design: No unnecessary overhead or complexity
+- Beginner-Friendly: Designed for ease of use and rapid integration
 Project Status
 
 #  Early Development
 
 - APIs and syntax may change frequently
 
-- Bugs are expected; feedback and reports are appreciated
+- Bugs are expected; feedback and reports are appreciated!
 
 - NFTP is not yet fully stress-tested with large files
 
