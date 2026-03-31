@@ -24,16 +24,12 @@
 #include <algorithm>
 #include <string>
 
-// FIX: Separate send/recv mutexes per connection.
-// OpenSSL allows concurrent SSL_read + SSL_write on the same object only when
-// each direction is serialised independently. One combined mutex would block
-// reads while a large file send is in progress (and vice-versa).
+// i seperated the send and recv cz its going south
 struct ConnMutexes {
     std::mutex send_mtx;
     std::mutex recv_mtx;
 };
 
-// ─── Global state ─────────────────────────────────────────────────────────────
 static std::map<int, SSL*>                         s_clients;
 static std::atomic<int>                            s_client_index{0};
 static std::function<void(int, std::string)>       s_messageCallback;
@@ -43,7 +39,6 @@ static std::mutex                                  s_clients_mutex;
 static std::map<int, std::shared_ptr<ConnMutexes>> s_conn_mutexes;
 static ConnMutexes                                 s_client_conn_mutexes; // client side
 
-// ─── Internal helpers ─────────────────────────────────────────────────────────
 
 static SSL* getSSL(int id) {
     std::lock_guard<std::mutex> lk(s_clients_mutex);
@@ -57,11 +52,8 @@ static std::shared_ptr<ConnMutexes> getConn(int id) {
     return it != s_conn_mutexes.end() ? it->second : nullptr;
 }
 
-// FIX: _sendRaw / _recvRaw are unlocked. Callers must hold the appropriate mutex
-// before calling them. This lets sendFile call _sendRaw for the filename without
-// deadlocking against itself (original code called sendMsg while holding io_lock,
-// but sendMsg never acquired that lock, so the lock was completely ignored).
 
+//sendraw and recv so i can call it from functions that lock the mutex.
 static bool _sendRaw(SSL* ssl, const std::string& msg) {
     uint32_t len_net = htonl((uint32_t)msg.size());
     const char* hdr  = reinterpret_cast<const char*>(&len_net);
@@ -112,16 +104,12 @@ static auto printProgress = [](uint64_t done, uint64_t total) {
     std::cout << "] " << pct << "% " << std::flush;
 };
 
-// ─── Public API ───────────────────────────────────────────────────────────────
 
 void onMessage(std::function<void(int, std::string)> callback) {
     s_messageCallback = callback;
 }
 
-// FIX: sendMsg now acquires the per-client send mutex before touching SSL.
-// Previously it called SSL_write with no lock at all; two simultaneous sendMsg
-// calls for the same client (e.g. broadcasting from different threads) would
-// corrupt the SSL state and crash.
+//NMTS
 bool sendMsg(std::string msg, int id) {
     SSL* ssl = getSSL(id);
     if (!ssl) return false;
@@ -130,14 +118,12 @@ bool sendMsg(std::string msg, int id) {
         std::lock_guard<std::mutex> lk(conn->send_mtx);
         return _sendRaw(ssl, msg);
     }
-    // Client side: no entry in s_conn_mutexes, use the dedicated client mutex.
+
     std::lock_guard<std::mutex> lk(s_client_conn_mutexes.send_mtx);
     return _sendRaw(ssl, msg);
 }
 
-// FIX: recvMsg now acquires the per-client recv mutex. On the server side this
-// is only ever called during the auth handshake (before the receive thread
-// starts). On the client side it is the normal way to receive messages.
+
 std::string recvMsg(int id) {
     SSL* ssl = getSSL(id);
     if (!ssl) return "EXITED(C-178)";
@@ -197,7 +183,7 @@ void runServer(int port, std::string password) {
                 s_conn_mutexes[ci] = conn;
             }
 
-            // Auth: receive password under the recv mutex.
+            //receive password under the recv mutex.
             std::string recvdp;
             {
                 std::lock_guard<std::mutex> lk(conn->recv_mtx);
@@ -225,9 +211,6 @@ void runServer(int port, std::string password) {
                     while (true) {
                         std::string msg;
                         {
-                            // FIX: recv_mtx is released BEFORE the callback fires.
-                            // This means recvFile() can be called safely from inside
-                            // an onMessage callback without deadlocking.
                             std::lock_guard<std::mutex> lk(conn->recv_mtx);
                             msg = _recvRaw(ssl);
                         }
@@ -243,6 +226,7 @@ void runServer(int port, std::string password) {
                             close(new_fd);
                             break;
                         }
+                        //record the actual message
                         if (s_messageCallback) s_messageCallback(ci, msg);
                     }
                 }).detach();
@@ -265,12 +249,10 @@ int runClient(std::string ip, int port, std::string password) {
         close(fd);
         return -1;
     }
-
+    //finding cert
     SSL_CTX* ctx = SSL_CTX_new(TLS_client_method());
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
     SSL_CTX_load_verify_locations(ctx, "cert.pem", nullptr);
-    // SSL_new increments the CTX refcount, so it's safe to free ctx here.
-    // The context will be freed when the SSL object is freed.
     SSL* ssl = SSL_new(ctx);
     SSL_CTX_free(ctx);
     SSL_set_fd(ssl, fd);
@@ -289,7 +271,6 @@ int runClient(std::string ip, int port, std::string password) {
     }
 
     s_client_ssl = ssl;
-    // FIX: password is now sent under the client send mutex.
     {
         std::lock_guard<std::mutex> lk(s_client_conn_mutexes.send_mtx);
         _sendRaw(ssl, password);
@@ -298,9 +279,7 @@ int runClient(std::string ip, int port, std::string password) {
     return fd;
 }
 
-// FIX: sendFile acquires the send mutex and calls _sendRaw directly for the
-// filename. The original code called sendMsg() (no lock) after acquiring
-// io_lock — the lock did nothing because sendMsg ignored it entirely.
+//NFTP
 bool sendFile(std::string filepath, int id) {
     SSL* ssl = getSSL(id);
     if (!ssl) return false;
@@ -341,7 +320,7 @@ bool sendFile(std::string filepath, int id) {
     return total_sent == size;
 }
 
-// FIX: same as sendFile — holds recv_mtx and calls _recvRaw directly.
+//now calls recvraw so it doesnt fuck up the mutex
 bool recvFile(std::string folderpath, int id) {
     SSL* ssl = getSSL(id);
     if (!ssl) return false;
