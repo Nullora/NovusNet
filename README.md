@@ -1,15 +1,15 @@
 # NovusNet
 
-NovusNet is a lightweight networking library designed to simplify client server communication. It enables developers to establish secure connections and exchange data in just a few lines of code without the complexity of large frameworks such as Boost.Asio.
+NovusNet is a lightweight networking library designed to simplify client server communication. It allows developers to make secure connections and exchange data in just a few lines of code without the complexity of larger libraries such as Boost.Asio or others.
 
-Built with indie developers and beginners in mind, NovusNet abstracts away low-level socket handling and encryption, allowing you to focus on building your application instead of managing networking boilerplate.
+NovusNet abstracts away low-level socket handling and encryption, allowing you to focus on building your application instead of managing networking boilerplate.
 
 # Key Features
-- Minimal Setup: Get a client and server communicating in under 10 lines of code
-- Secure Communication: Built-in encryption for all data transmission
+- Get a client and server communicating in under 10 lines of code!
+- Native encryption for all data transmission
 - NFTP (Novus File Transfer Protocol): Send and receive files of any size with a single function call
-- Lightweight Design: No unnecessary overhead or complexity
-- Beginner-Friendly: Designed for ease of use and rapid integration
+- No unnecessary overhead or complexity
+- Designed for ease of use and rapid integration
 Project Status
 
 #  Early Development
@@ -37,7 +37,7 @@ NovusNet was created to eliminate that friction by providing a simple, reusable 
 - [droidcom](https://github.com/droidcom) (Writer)
 # Usage Overview
 
-Refer to Documentation.md for a full API reference. Below is a simplified example:
+Refer to documentation.md for a full API reference. Below is a simplified example:
 
 # Server Example:
 ```cpp
@@ -80,9 +80,7 @@ int main() {
 ```
 # Example Projects
 
-- NovusSync: File synchronization example (primarily for testing and demonstration)
-
-Note: NovusSync is not production-ready and may require modification to function on your system.
+- NovusSync: File sync example (primarily for testing and demonstration)
 
 # Installation
 
@@ -101,7 +99,7 @@ git clone <repository-url>
 ## 4. If using CMake:
 ```bash
 add_executable(PROJECTNAME
-    src/main.cpp
+    src/yourfile.cpp
     src/nn.cpp
 )
 
@@ -117,15 +115,7 @@ chmod +x gen.sh
 ```
 # Notes:
 - Ensure key.pem and cert.pem are present in your build directory when running the server
-- Some IDEs may incorrectly highlight #include "nn.hpp" as an error—verify before troubleshooting
-
-# Contributing:
-
-Contributions are highly encouraged! If you're interested in improving NovusNet:
-
-- Submit pull requests
-- Report bugs
-- Open discussions for new ideas
+- Some IDEs may incorrectly highlight #include "nn.hpp" as an error so dont mind it.
 
 # Note
 If anyone can help me maintain this, please do. It's very hard maintaining it fully on my own although nobody uses it. Pull requests or discussions in issues are heavily appreciated!!
