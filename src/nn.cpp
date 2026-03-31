@@ -1,7 +1,7 @@
 //This library is made by @Nullora on Github. The link can be found here, and documentation aswell: https://github.com/Nullora/NovusNet
 //NovusNet is a c++ networking library made to facilitate connection between devices while keeping it fast and secure.
 //It's fully free and anyone can distribute/use it.
-//Last updated: 27/3/26
+//Last updated: 31/3/26
 #include "nn.hpp"
 #include <map>
 #include <functional>
@@ -30,14 +30,14 @@ struct ConnMutexes {
     std::mutex recv_mtx;
 };
 
-static std::map<int, SSL*>                         s_clients;
-static std::atomic<int>                            s_client_index{0};
-static std::function<void(int, std::string)>       s_messageCallback;
-static SSL_CTX*                                    s_ssl_ctx    = nullptr;
-static SSL*                                        s_client_ssl = nullptr;
-static std::mutex                                  s_clients_mutex;
+static std::map<int, SSL*> s_clients;
+static std::atomic<int> s_client_index{0};
+static std::function<void(int, std::string)> s_messageCallback;
+static SSL_CTX*  s_ssl_ctx    = nullptr;
+static SSL* s_client_ssl = nullptr;
+static std::mutex s_clients_mutex;
 static std::map<int, std::shared_ptr<ConnMutexes>> s_conn_mutexes;
-static ConnMutexes                                 s_client_conn_mutexes; // client side
+static ConnMutexes s_client_conn_mutexes; // client side
 
 
 static SSL* getSSL(int id) {
@@ -91,13 +91,13 @@ static std::string _recvRaw(SSL* ssl) {
         int r = SSL_read(ssl, msg.data() + recvd, left);
         if (r <= 0) return "EXITED(C-178)";
         recvd += r;
-        left  -= r;
+        left -= r;
     }
     return msg;
 }
 
 static auto printProgress = [](uint64_t done, uint64_t total) {
-    int pct    = (int)((done * 100) / total);
+    int pct = (int)((done * 100) / total);
     int filled = pct / 5;
     std::cout << "\r[";
     for (int i = 0; i < 20; ++i) std::cout << (i < filled ? '#' : '-');
@@ -152,17 +152,17 @@ void runServer(int port, std::string password) {
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     sockaddr_in addr{};
-    addr.sin_family      = AF_INET;
+    addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port        = htons(port);
-    if (bind(server_fd,   (sockaddr*)&addr, sizeof(addr)) < 0) { perror("bind");   return; }
-    if (listen(server_fd, 32)                              < 0) { perror("listen"); return; }
+    addr.sin_port = htons(port);
+    if (bind(server_fd,(sockaddr*)&addr, sizeof(addr)) < 0) { perror("bind");   return; }
+    if (listen(server_fd, 32)< 0) { perror("listen"); return; }
     std::cout << "Server on port " << port << "\n";
 
     std::thread([server_fd, password]() {
         while (true) {
             sockaddr_in client_addr{};
-            socklen_t   clen = sizeof(client_addr);
+            socklen_t clen = sizeof(client_addr);
             int new_fd = accept(server_fd, (sockaddr*)&client_addr, &clen);
             if (new_fd < 0) continue;
 
@@ -179,7 +179,7 @@ void runServer(int port, std::string password) {
             auto conn = std::make_shared<ConnMutexes>();
             {
                 std::lock_guard<std::mutex> lk(s_clients_mutex);
-                s_clients[ci]      = ssl;
+                s_clients[ci] = ssl;
                 s_conn_mutexes[ci] = conn;
             }
 
@@ -241,7 +241,7 @@ int runClient(std::string ip, int port, std::string password) {
 
     sockaddr_in srv{};
     srv.sin_family = AF_INET;
-    srv.sin_port   = htons(port);
+    srv.sin_port = htons(port);
     inet_pton(AF_INET, ip.c_str(), &srv.sin_addr);
 
     if (connect(fd, (sockaddr*)&srv, sizeof(srv)) < 0) {
@@ -301,7 +301,7 @@ bool sendFile(std::string filepath, int id) {
     std::string filename = filepath.substr(filepath.find_last_of("/\\") + 1);
     if (!_sendRaw(ssl, filename)) { close(fd); return false; }
 
-    char     buf[16384];
+    char buf[16384];
     uint64_t total_sent = 0;
     while (total_sent < size) {
         ssize_t rd = read(fd, buf, sizeof(buf));
@@ -310,7 +310,7 @@ bool sendFile(std::string filepath, int id) {
         while (off < (int)rd) {
             int sent = SSL_write(ssl, buf + off, (int)rd - off);
             if (sent <= 0) { close(fd); return false; }
-            off        += sent;
+            off += sent;
             total_sent += (uint64_t)sent;
         }
         printProgress(total_sent, size);
