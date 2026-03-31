@@ -1,22 +1,22 @@
 # NovusNet
 
-NovusNet is a lightweight networking library designed to simplify client-server communication. It enables developers to establish secure connections and exchange data in just a few lines of code—without the complexity of large frameworks such as Boost.Asio.
+NovusNet is a lightweight networking library designed to simplify client server communication. It enables developers to establish secure connections and exchange data in just a few lines of code without the complexity of large frameworks such as Boost.Asio.
 
 Built with indie developers and beginners in mind, NovusNet abstracts away low-level socket handling and encryption, allowing you to focus on building your application instead of managing networking boilerplate.
 
 # Key Features
-Minimal Setup — Get a client and server communicating in under 10 lines of code
-Secure Communication — Built-in encryption for all data transmission
-NFTP (Novus File Transfer Protocol) — Send and receive files of any size with a single function call
-Lightweight Design — No unnecessary overhead or complexity
-Beginner-Friendly — Designed for ease of use and rapid integration
+- Minimal Setup: Get a client and server communicating in under 10 lines of code
+- Secure Communication: Built-in encryption for all data transmission
+- NFTP (Novus File Transfer Protocol): Send and receive files of any size with a single function call
+- Lightweight Design: No unnecessary overhead or complexity
+- Beginner-Friendly: Designed for ease of use and rapid integration
 Project Status
 
 #  Early Development
 
 - APIs and syntax may change frequently
 
-- Bugs are expected; feedback and reports are appreciated
+- Bugs are expected; feedback and reports are appreciated!
 
 - NFTP is not yet fully stress-tested with large files
 
@@ -80,8 +80,7 @@ int main() {
 ```
 # Example Projects
 
-- NovusChat — Demonstrates real-time messaging
-- NovusSync — File synchronization example (primarily for testing and demonstration)
+- NovusSync: File synchronization example (primarily for testing and demonstration)
 
 Note: NovusSync is not production-ready and may require modification to function on your system.
 
@@ -116,18 +115,13 @@ target_link_libraries(PROJECTNAME OpenSSL::SSL OpenSSL::Crypto)
 chmod +x gen.sh
 ./gen.sh
 ```
-# Updates
-- 12/03/2026 — Introduced NFTP (file transfer support)
-- 10/03/2026 — Added access control via password authentication
-- 09/03/2026 — Implemented full encryption support
-
 # Notes:
 - Ensure key.pem and cert.pem are present in your build directory when running the server
 - Some IDEs may incorrectly highlight #include "nn.hpp" as an error—verify before troubleshooting
 
 # Contributing:
 
-Contributions are highly encouraged. If you're interested in improving NovusNet:
+Contributions are highly encouraged! If you're interested in improving NovusNet:
 
 - Submit pull requests
 - Report bugs
