@@ -20,13 +20,13 @@ Project Status
 
 - NFTP is not yet fully stress-tested with large files
 
-- Currently Linux-only (Windows support planned once stable)
+- Currently Linux-only
 
 # Motivation
 
 Networking can be difficult to approach, especially for beginners. Setting up sockets, handling errors, and implementing encryption often requires significant effort and repetition across projects.
 
-NovusNet was created to eliminate that friction by providing a simple, reusable solution for secure communication. Whether you're learning networking or building a small project, NovusNet allows you to move faster and focus on what matters.
+NovusNet was created to eliminate that hardwork by providing a simple, reusable solution for secure communication. Whether you're learning networking or building a small project, NovusNet allows you to move faster and focus on building.
 
 # Contributors
 
@@ -37,7 +37,7 @@ NovusNet was created to eliminate that friction by providing a simple, reusable 
 - [droidcom](https://github.com/droidcom) (Writer)
 # Usage Overview
 
-Refer to documentation.md for a full API reference. Below is a simplified example:
+Refer to documentation.md for a full API reference. Below is an example:
 
 # Server Example:
 ```cpp
@@ -78,9 +78,6 @@ int main() {
     return 0;
 }
 ```
-# Example Projects
-
-- NovusSync: File sync example (primarily for testing and demonstration)
 
 # Installation
 
@@ -113,9 +110,6 @@ target_link_libraries(PROJECTNAME OpenSSL::SSL OpenSSL::Crypto)
 chmod +x gen.sh
 ./gen.sh
 ```
-# Notes:
-- Ensure key.pem and cert.pem are present in your build directory when running the server
-- Some IDEs may incorrectly highlight #include "nn.hpp" as an error so dont mind it.
 
 # Note
 If anyone can help me maintain this, please do. It's very hard maintaining it fully on my own although nobody uses it. Pull requests or discussions in issues are heavily appreciated!!
