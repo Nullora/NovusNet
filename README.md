@@ -10,17 +10,16 @@ NovusNet abstracts away low-level socket handling and encryption, allowing you t
 - NFTP (Novus File Transfer Protocol): Send and receive files of any size with a single function call
 - No unnecessary overhead or complexity
 - Designed for ease of use and rapid integration
-Project Status
 
 #  Early Development
 
 - APIs and syntax may change frequently
 
-- Bugs are expected; feedback and reports are appreciated!
+- Bugs are expected, feedback and reports are appreciated!
 
 - NFTP is not yet fully stress-tested with large files
 
-- Currently Linux-only
+- Currently Linux only
 
 # Motivation
 
@@ -86,8 +85,8 @@ int main() {
 git clone <repository-url>
 ```
 ## 2. Copy required files:
-- include/nn.hpp → your project’s include directory
-- src/nn.cpp → your project’s source directory
+- include/nn.hpp -> your project’s include directory
+- src/nn.cpp -> your project’s source directory
 
 ## 3. Include the library:
 ```bash
